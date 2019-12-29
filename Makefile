@@ -2,7 +2,7 @@
 
 PYTHON=python
 
-srcdir := bottleneck/
+srcdir := bottleneck
 
 help:
 	@echo "Available tasks:"
@@ -28,7 +28,10 @@ test:
 	${PYTHON} -c "import bottleneck;bottleneck.test()"
 
 flake8:
-	flake8 --exclude=doc,.tox .
+	flake8
+
+black:
+	black . --exclude "(build/|dist/|\.git/|\.mypy_cache/|\.tox/|\.venv/\.asv/|env|\.eggs)"
 
 readme:
 	PYTHONPATH=`pwd`:PYTHONPATH ${PYTHON} tools/update_readme.py
@@ -59,3 +62,4 @@ clean:
 	rm -rf ${srcdir}/*.html ${srcdir}/build
 	rm -rf ${srcdir}/*.c
 	rm -rf ${srcdir}/*.so
+	rm -rf ${srcdir}/bn_config.h

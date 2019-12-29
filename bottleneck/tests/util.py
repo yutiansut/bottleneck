@@ -1,12 +1,14 @@
 import numpy as np
 import bottleneck as bn
 
-DTYPES = [np.float64, np.float32, np.int64, np.int32]
+INT_DTYPES = [np.int64, np.int32]
+FLOAT_DTYPES = [np.float64, np.float32]
+DTYPES = tuple(FLOAT_DTYPES + INT_DTYPES)
 
 
 def get_functions(module_name, as_string=False):
-    "Returns a list of functions, optionally as string function names"
-    if module_name == 'all':
+    """Returns a list of functions, optionally as string function names"""
+    if module_name == "all":
         funcs = []
         funcs_in_dict = func_dict()
         for key in funcs_in_dict:
@@ -21,42 +23,46 @@ def get_functions(module_name, as_string=False):
 
 def func_dict():
     d = {}
-    d['reduce'] = [bn.nansum,
-                   bn.nanmean,
-                   bn.nanstd,
-                   bn.nanvar,
-                   bn.nanmin,
-                   bn.nanmax,
-                   bn.median,
-                   bn.nanmedian,
-                   bn.ss,
-                   bn.nanargmin,
-                   bn.nanargmax,
-                   bn.anynan,
-                   bn.allnan,
-                   ]
-    d['move'] = [bn.move_sum,
-                 bn.move_mean,
-                 bn.move_std,
-                 bn.move_var,
-                 bn.move_min,
-                 bn.move_max,
-                 bn.move_argmin,
-                 bn.move_argmax,
-                 bn.move_median,
-                 bn.move_rank,
-                 ]
-    d['nonreduce'] = [bn.replace]
-    d['nonreduce_axis'] = [bn.partition,
-                           bn.argpartition,
-                           bn.rankdata,
-                           bn.nanrankdata,
-                           bn.push,
-                           ]
+    d["reduce"] = [
+        bn.nansum,
+        bn.nanmean,
+        bn.nanstd,
+        bn.nanvar,
+        bn.nanmin,
+        bn.nanmax,
+        bn.median,
+        bn.nanmedian,
+        bn.ss,
+        bn.nanargmin,
+        bn.nanargmax,
+        bn.anynan,
+        bn.allnan,
+    ]
+    d["move"] = [
+        bn.move_sum,
+        bn.move_mean,
+        bn.move_std,
+        bn.move_var,
+        bn.move_min,
+        bn.move_max,
+        bn.move_argmin,
+        bn.move_argmax,
+        bn.move_median,
+        bn.move_rank,
+    ]
+    d["nonreduce"] = [bn.replace]
+    d["nonreduce_axis"] = [
+        bn.partition,
+        bn.argpartition,
+        bn.rankdata,
+        bn.nanrankdata,
+        bn.push,
+    ]
     return d
 
 
 # ---------------------------------------------------------------------------
+
 
 def arrays(func_name, dtypes=DTYPES):
     return array_iter(array_generator, func_name, dtypes)
@@ -77,74 +83,82 @@ def array_iter(arrays_func, *args):
 
 
 def array_generator(func_name, dtypes):
-    "Iterator that yields arrays to use for unit testing."
+    """Iterator that yields arrays to use for unit testing."""
+
+    f_dtypes = list(set(dtypes) & set(FLOAT_DTYPES))
 
     # define nan and inf
-    if func_name in ('partition', 'argpartition'):
+    if func_name in ("partition", "argpartition"):
         nan = 0
     else:
         nan = np.nan
-    if func_name in ('move_sum', 'move_mean', 'move_std', 'move_var'):
+    if func_name in ("move_sum", "move_mean", "move_std", "move_var"):
         # these functions can't handle inf
         inf = 8
     else:
         inf = np.inf
 
     # nan and inf
-    yield np.array([inf, nan])
-    yield np.array([inf, -inf])
-    yield np.array([nan, 2, 3])
-    yield np.array([-inf, 2, 3])
-    if func_name != 'nanargmin':
-        yield np.array([nan, inf])
+    for dtype in f_dtypes:
+        yield np.array([inf, nan], dtype=dtype)
+        yield np.array([inf, -inf], dtype=dtype)
+        yield np.array([nan, 2, 3], dtype=dtype)
+        yield np.array([-inf, 2, 3], dtype=dtype)
+        if func_name != "nanargmin":
+            yield np.array([nan, inf], dtype=dtype)
 
     # byte swapped
-    yield np.array([1, 2, 3], dtype='>f4')
-    yield np.array([1, 2, 3], dtype='<f4')
+    yield np.array([1, 2, 3], dtype=">f4")
+    yield np.array([1, 2, 3], dtype="<f4")
 
     # make sure slow is callable
     yield np.array([1, 2, 3], dtype=np.float16)
 
     # regression tests
-    yield np.array([1, 2, 3]) + 1e9  # check that move_std is robust
-    yield np.array([0, 0, 0])  # nanargmax/nanargmin
-    yield np.array([1, nan, nan, 2])  # nanmedian
-    yield np.array([2**31], dtype=np.int64)  # overflows on windows
-    yield np.array([[1.0, 2], [3, 4]])[..., np.newaxis]  # issue #183
+    for dtype in dtypes:
+        yield np.array([1, 2, 3], dtype=dtype) + 1e9  # check that move_std is robust
+        yield np.array([0, 0, 0], dtype=dtype)  # nanargmax/nanargmin
+
+    for dtype in f_dtypes:
+        yield np.array([1, nan, nan, 2], dtype=dtype)  # nanmedian
+
+    yield np.array([2 ** 31], dtype=np.int64)  # overflows on windows
+
+    for dtype in dtypes:
+        yield np.array([[1, 2], [3, 4]], dtype=dtype)[..., np.newaxis]  # issue #183
 
     # ties
-    yield np.array([0, 0, 0])
-    yield np.array([0, 0, 0], dtype=np.float64)
-    yield np.array([1, 1, 1], dtype=np.float64)
+    for dtype in dtypes:
+        yield np.array([0, 0, 0], dtype=dtype)
+        yield np.array([1, 1, 1], dtype=dtype)
 
     # 0d input
-    if not func_name.startswith('move'):
-        yield np.array(-9)
-        yield np.array(0)
-        yield np.array(9)
-        yield np.array(-9.0)
-        yield np.array(0.0)
-        yield np.array(9.0)
-        yield np.array(-inf)
-        yield np.array(inf)
-        yield np.array(nan)
+    if not func_name.startswith("move"):
+        for dtype in dtypes:
+            yield np.array(-9, dtype=dtype)
+            yield np.array(0, dtype=dtype)
+            yield np.array(9, dtype=dtype)
+            if dtype in f_dtypes:
+                yield np.array(-inf, dtype=dtype)
+                yield np.array(inf, dtype=dtype)
+                yield np.array(nan, dtype=dtype)
 
     # automate a bunch of arrays to test
     ss = {}
-    ss[0] = {'size':  0, 'shapes': [(0,), (0, 0), (2, 0), (2, 0, 1)]}
-    ss[1] = {'size':  8, 'shapes': [(8,)]}
-    ss[2] = {'size': 12, 'shapes': [(2, 6), (3, 4)]}
-    ss[3] = {'size': 16, 'shapes': [(2, 2, 4)]}
-    ss[4] = {'size': 24, 'shapes': [(1, 2, 3, 4)]}
+    ss[0] = {"size": 0, "shapes": [(0,), (0, 0), (2, 0), (2, 0, 1)]}
+    ss[1] = {"size": 8, "shapes": [(8,)]}
+    ss[2] = {"size": 12, "shapes": [(2, 6), (3, 4)]}
+    ss[3] = {"size": 16, "shapes": [(2, 2, 4)]}
+    ss[4] = {"size": 24, "shapes": [(1, 2, 3, 4)]}
     for seed in (1, 2):
         rs = np.random.RandomState(seed)
         for ndim in ss:
-            size = ss[ndim]['size']
-            shapes = ss[ndim]['shapes']
+            size = ss[ndim]["size"]
+            shapes = ss[ndim]["shapes"]
             for dtype in dtypes:
                 a = np.arange(size, dtype=dtype)
                 if issubclass(a.dtype.type, np.inexact):
-                    if func_name not in ('nanargmin', 'nanargmax'):
+                    if func_name not in ("nanargmin", "nanargmax"):
                         # numpy can't handle eg np.nanargmin([np.nan, np.inf])
                         idx = rs.rand(*a.shape) < 0.2
                         a[idx] = inf
@@ -157,7 +171,9 @@ def array_generator(func_name, dtypes):
                     yield a.reshape(shape)
 
     # non-contiguous arrays
-    yield np.array([[1, 2], [3, 4]])[:, [1]]  # gh 161
+    for dtype in dtypes:
+        yield np.array([[1, 2], [3, 4]], dtype=dtype)[:, [1]]  # gh 161
+
     for dtype in dtypes:
         # 1d
         a = np.arange(12).astype(dtype)

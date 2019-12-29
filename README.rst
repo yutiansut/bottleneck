@@ -1,7 +1,8 @@
-.. image:: https://travis-ci.org/kwgoodman/bottleneck.svg?branch=master
-    :target: https://travis-ci.org/kwgoodman/bottleneck
-.. image:: https://ci.appveyor.com/api/projects/status/github/kwgoodman/bottleneck?svg=true&passingText=passing&failingText=failing&pendingText=pending
-    :target: https://ci.appveyor.com/project/kwgoodman/bottleneck
+.. image:: https://travis-ci.org/pydata/bottleneck.svg?branch=master
+    :target: https://travis-ci.org/pydata/bottleneck
+.. image:: https://github.com/pydata/bottleneck/workflows/Github%20Actions/badge.svg
+    :target: https://github.com/pydata/bottleneck/actions
+
 ==========
 Bottleneck
 ==========
@@ -31,42 +32,42 @@ Bottleneck comes with a benchmark suite::
 
     >>> bn.bench()
     Bottleneck performance benchmark
-        Bottleneck 1.3.0; Numpy 1.16.0
+        Bottleneck 1.3.0.dev0+122.gb1615d7; Numpy 1.16.4
         Speed is NumPy time divided by Bottleneck time
         NaN means approx one-fifth NaNs; float64 used
 
                   no NaN     no NaN      NaN       no NaN      NaN
                    (100,)  (1000,1000)(1000,1000)(1000,1000)(1000,1000)
                    axis=0     axis=0     axis=0     axis=1     axis=1
-    nansum         83.7        1.5        1.9        2.3        2.4
-    nanmean       245.3        2.3        2.4        3.4        2.9
-    nanstd        316.8        2.0        2.1        2.6        2.5
-    nanvar        298.9        1.8        2.1        2.7        2.5
-    nanmin         63.8        0.7        1.9        1.0        3.3
-    nanmax         53.8        0.7        1.8        0.8        2.6
-    median        155.1        1.3        6.0        1.1        6.2
-    nanmedian     166.7        7.3        8.4        7.2        8.5
-    ss             35.4        1.2        1.2        1.6        1.6
-    nanargmin     105.2       12.2        3.0        2.3        5.8
-    nanargmax     123.5        3.1        6.6        2.3        5.7
-    anynan         24.0        0.3       41.5        0.5       28.5
-    allnan         51.6      147.5      129.4      119.3       57.8
-    rankdata       67.5        2.5        2.4        2.9        2.9
-    nanrankdata    71.1        2.7        2.6        3.2        3.1
-    partition       4.1        1.2        2.7        1.0        1.4
-    argpartition    3.7        1.1        1.4        1.1        1.6
-    replace        15.1        1.5        1.5        1.5        1.5
-    push         3199.6        3.1        9.9       21.2       16.2
-    move_sum     4901.4       75.1      116.5      201.3      201.3
-    move_mean   11550.7      109.8      182.6      243.5      252.4
-    move_std    11910.9       98.0      195.0      140.5      248.8
-    move_var    14669.2      129.3      237.2      211.7      316.8
-    move_min     2484.2       19.5       35.6       25.0       43.8
-    move_max     2401.6       20.0       36.0       25.6       44.1
-    move_argmin  4531.0       41.8       74.8       42.9       83.8
-    move_argmax  4339.2       42.7       74.8       43.5       82.2
-    move_median  2752.2      150.2      151.0      153.2      154.7
-    move_rank    1585.6        1.9        2.0        2.5        2.7
+    nansum         29.7        1.4        1.6        2.0        2.1
+    nanmean        99.0        2.0        1.8        3.2        2.5
+    nanstd        145.6        1.8        1.8        2.7        2.5
+    nanvar        138.4        1.8        1.8        2.8        2.5
+    nanmin         27.6        0.5        1.7        0.7        2.4
+    nanmax         26.6        0.6        1.6        0.7        2.5
+    median        120.6        1.3        4.9        1.1        5.7
+    nanmedian     117.8        5.0        5.7        4.8        5.5
+    ss             13.2        1.2        1.3        1.5        1.5
+    nanargmin      66.8        5.5        4.8        3.5        7.1
+    nanargmax      57.6        2.9        5.1        2.5        5.3
+    anynan         10.2        0.3       52.3        0.8       41.6
+    allnan         15.1      196.0      156.3      135.8      111.2
+    rankdata       45.9        1.2        1.2        2.1        2.1
+    nanrankdata    50.5        1.4        1.3        2.4        2.3
+    partition       3.3        1.1        1.6        1.0        1.5
+    argpartition    3.4        1.2        1.5        1.1        1.6
+    replace         9.0        1.5        1.5        1.5        1.5
+    push         1565.6        5.9        7.0       13.0       10.9
+    move_sum     2159.3       31.1       83.6      186.9      182.5
+    move_mean    6264.3       66.2      111.9      361.1      246.5
+    move_std     8653.6       86.5      163.7      232.0      317.7
+    move_var     8856.0       96.3      171.6      267.9      332.9
+    move_min     1186.6       13.4       30.9       23.5       45.0
+    move_max     1188.0       14.6       29.9       23.5       46.0
+    move_argmin  2568.3       33.3       61.0       49.2       86.8
+    move_argmax  2475.8       30.9       58.6       45.0       82.8
+    move_median  2236.9      153.9      151.4      171.3      166.9
+    move_rank     847.1        1.2        1.4        2.3        2.6
 
 You can also run a detailed benchmark for a single function using, for
 example, the command::
@@ -84,8 +85,8 @@ Where
 
 ===================   ========================================================
  download             https://pypi.python.org/pypi/Bottleneck
- docs                 https://kwgoodman.github.io/bottleneck-doc
- code                 https://github.com/kwgoodman/bottleneck
+ docs                 https://bottleneck.readthedocs.io
+ code                 https://github.com/pydata/bottleneck
  mailing list         https://groups.google.com/group/bottle-neck
 ===================   ========================================================
 
@@ -93,7 +94,7 @@ License
 =======
 
 Bottleneck is distributed under a Simplified BSD license. See the LICENSE file
-for details.
+and LICENSES directory for details.
 
 Install
 =======
@@ -101,15 +102,15 @@ Install
 Requirements:
 
 ======================== ====================================================
-Bottleneck               Python 2.7, 3.5, 3.6; NumPy 1.16.0
+Bottleneck               Python 2.7, 3.5, 3.6, 3.7, 3.8; NumPy 1.16.0+
 Compile                  gcc, clang, MinGW or MSVC
-Unit tests               nose
+Unit tests               pytest, hypothesis
 Documentation            sphinx, numpydoc
 ======================== ====================================================
 
-To install Bottleneck on GNU/Linux, Mac OS X, et al.::
+To install Bottleneck on Linux, Mac OS X, et al.::
 
-    $ sudo python setup.py install
+    $ pip install .
 
 To install bottleneck on Windows, first install MinGW and add it to your
 system path. Then install Bottleneck with the command::
@@ -124,9 +125,27 @@ Unit tests
 
 After you have installed Bottleneck, run the suite of unit tests::
 
-    >>> import bottleneck as bn
-    >>> bn.test()
-    <snip>
-    Ran 169 tests in 57.205s
-    OK
-    <nose.result.TextTestResult run=169 errors=0 failures=0>
+  In [1]: import bottleneck as bn
+
+  In [2]: bn.test()
+  ============================= test session starts =============================
+  platform linux -- Python 3.7.4, pytest-4.3.1, py-1.8.0, pluggy-0.12.0
+  hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase('/home/chris/code/bottleneck/.hypothesis/examples')
+  rootdir: /home/chris/code/bottleneck, inifile: setup.cfg
+  plugins: openfiles-0.3.2, remotedata-0.3.2, doctestplus-0.3.0, mock-1.10.4, forked-1.0.2, cov-2.7.1, hypothesis-4.32.2, xdist-1.26.1, arraydiff-0.3
+  collected 190 items
+  
+  bottleneck/tests/input_modification_test.py ........................... [ 14%]
+  ..                                                                      [ 15%]
+  bottleneck/tests/list_input_test.py .............................       [ 30%]
+  bottleneck/tests/move_test.py .................................         [ 47%]
+  bottleneck/tests/nonreduce_axis_test.py ....................            [ 58%]
+  bottleneck/tests/nonreduce_test.py ..........                           [ 63%]
+  bottleneck/tests/reduce_test.py ....................................... [ 84%]
+  ............                                                            [ 90%]
+  bottleneck/tests/scalar_input_test.py ..................                [100%]
+  
+  ========================= 190 passed in 46.42 seconds =========================
+  Out[2]: True
+
+If developing in the git repo, simply run ``py.test``

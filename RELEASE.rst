@@ -4,29 +4,107 @@ Release Notes
 =============
 
 These are the major changes made in each release. For details of the changes
-see the commit log at http://github.com/kwgoodman/bottleneck
+see the commit log at https://github.com/pydata/bottleneck
 
-Bottleneck 1.3.0
+Bottleneck 1.4.0
 ================
 
-*Release date: Not yet released; in development*
+*Release date: in development*
 
-- Move documentation to https://kwgoodman.github.io/bottleneck-doc
-- Remove numpydoc package from Bottleneck source distribution
-- bn.slow.nansum and bn.slow.ss now longer coerce output to have the same
-  dtype as input
-- Test (tox, travis, appveyor) against latest numpy (in conda)
+Bug Fixes
+~~~~~~~~~
 
-**Bug Fixes**
+Contributors
+~~~~~~~~~~~~
 
-- #170 Documentation fails to build on Python 3
-- #175 bn.bench() crashes on python 3.6.3, numpy 1.13.3
-- #178 bn.push(a, n=None) raises when None is explicitly passed
-- #183 bn.nansum(a) wrong output when a = np.ones((2, 2))[..., np.newaxis]
-  same issue of other reduce functions
-- #194 Silenced FutureWarning from NumPy in the slow version of move functions
-- #195 Installing bottleneck onto a system that does not already have Numpy
-- #201 Memory leaked when input was not a NumPy array
+.. contributors:: v1.3.1..HEAD
+
+
+Older Releases
+~~~~~~~~~~~~~~
+
+Bottleneck 1.3.1
+----------------
+
+*Release date: 2019-11-18*
+
+Bug Fixes
+~~~~~~~~~
+- Fix memory leak in :func:`bottleneck.nanmedian` with the default argument of ``axis=None``. Thanks to ``@jsmodic`` for reporting! (:issue:`276`, :issue:`278`)
+- Add regression test for memory leak case (:issue:`279`)
+
+Contributors
+~~~~~~~~~~~~
+
+.. contributors:: v1.3.0..v1.3.1
+
+
+Bottleneck 1.3.0
+----------------
+
+*Release date: 2019-11-12*
+
+Project Updates
+~~~~~~~~~~~~~~~
+- Bottleneck has a new maintainer, Christopher Whelan (``@qwhelan`` on GitHub).
+- Documentation now hosted at https://bottleneck.readthedocs.io
+- 1.3.x will be the last release to support Python 2.7
+- Bottleneck now supports and is tested against Python 3.7 and 3.8. (:issue:`211`, :issue:`268`)
+- The ``LICENSE`` file has been restructured to only include the license for the Bottleneck project to aid license audit tools. There has been no change to the licensing of Bottleneck.
+
+  - Licenses for other projects incorporated by Bottleneck are now reproduced in full in separate files in the ``LICENSES/`` directory (eg, ``LICENSES/NUMPY_LICENSE``)
+  - All licenses have been updated. Notably, setuptools is now MIT licensed and no longer under the ambiguous dual PSF/Zope license.
+- Bottleneck now uses :pep:`518` for specifying build dependencies, with per Python version specifications (:issue:`247`)
+
+
+Enhancements
+~~~~~~~~~~~~
+- Remove ``numpydoc`` package from Bottleneck source distribution
+- :func:`bottleneck.slow.reduce.nansum` and :func:`bottleneck.slow.reduce.ss` now longer coerce output to have the same dtype as input
+- Test (tox, travis, appveyor) against latest ``numpy`` (in conda)
+- Performance benchmarking also available via ``asv``
+- ``versioneer`` now used for versioning (:issue:`213`)
+- Test suite now uses ``pytest`` as ``nose`` is deprecated (:issue:`222`)
+- ``python setup.py build_ext --inplace`` is now incremental (:issue:`224`)
+- ``python setup.py clean`` now cleans all artifacts (:issue:`226`)
+- Compiler feature support now identified by testing rather than hardcoding (:issue:`227`)
+- The ``BN_OPT_3`` macro allows selective use of ``-O3`` at the function level (:issue:`223`)
+- Contributors are now automatically cited in the release notes (:issue:`244`)
+
+Performance
+~~~~~~~~~~~
+- Speed up :func:`bottleneck.reduce.anynan` and :func:`bottleneck.reduce.allnan` by 2x via ``BN_OPT_3`` (:issue:`223`)
+- All functions covered by ``asv`` benchmarks
+- :func:`bottleneck.nonreduce.replace` speedup of 4x via more explicit typing (:issue:`239`)
+- :func:`bottleneck.reduce.median` up to 2x faster for Fortran-ordered arrays (:issue:`248`)
+
+
+Bug Fixes
+~~~~~~~~~
+
+- Documentation fails to build on Python 3 (:issue:`170`)
+- :func:`bottleneck.benchmark.bench` crashes on python 3.6.3, numpy 1.13.3 (:issue:`175`)
+- :func:`bottleneck.nonreduce_axis.push` raises when :code:`n=None` is explicitly passed (:issue:`178`)
+- :func:`bottleneck.reduce.nansum` wrong output when :code:`a = np.ones((2, 2))[..., np.newaxis]`
+  same issue of other reduce functions (:issue:`183`)
+- Silenced FutureWarning from NumPy in the slow version of move functions (:issue:`194`)
+- Installing bottleneck onto a system that does not already have Numpy (:issue:`195`)
+- Memory leaked when input was not a NumPy array (:issue:`201`)
+- Tautological comparison in :func:`bottleneck.move.move_rank` removed (:issue:`207`, :issue:`212`)
+
+Cleanup
+~~~~~~~
+
+- The ``ez_setup.py`` module is no longer packaged (:issue:`211`)
+- Building documentation is now self-contained in ``make doc`` (:issue:`214`)
+- Codebase now ``flake8`` compliant and run on every commit
+- Codebase now uses ``black`` for autoformatting (:issue:`253`)
+
+Contributors
+~~~~~~~~~~~~
+
+.. contributors:: v1.2.1..v1.3.0
+
 
 Bottleneck 1.2.1
 ----------------
@@ -38,13 +116,17 @@ fixes a few bugs.
 
 **Bug Fixes**
 
-- #156 Installing bottleneck when two versions of NumPy are present
-- #157 Compiling on Ubuntu 14.04 inside a Windows 7 WMware
-- #159 Occasional segmentation fault in nanargmin, nanargmax, median,
-  and nanmedian when all of the following conditions are met:
+- Installing bottleneck when two versions of NumPy are present (:issue:`156`)
+- Compiling on Ubuntu 14.04 inside a Windows 7 WMware (:issue:`157`)
+- Occasional segmentation fault in :func:`bn.nanargmin`, :func:`nanargmax`, :func:`median`,
+  and :func:`nanmedian` when all of the following conditions are met:
   axis is None, input array is 2d or greater, and input array is not C
-  contiguous.
-- #163 Reducing np.array([2**31], dtype=np.int64) overflows on Windows
+  contiguous. (:issue:`159`)
+- Reducing np.array([2**31], dtype=np.int64) overflows on Windows (:issue:`163`)
+
+**Contributors**
+
+.. contributors:: v1.2.0..v1.2.1
 
 Bottleneck 1.2.0
 ----------------
@@ -78,8 +160,8 @@ This release is a complete rewrite of Bottleneck.
 
 - Functions partsort and argpartsort have been renamed to partition and
   argpartition to match NumPy. Additionally the meaning of the input
-  arguments have changed: bn.partsort(a, n) is now equivalent to
-  bn.partition(a, kth=n-1). Similarly for bn.argpartition.
+  arguments have changed: :func:`bn.partsort(a, n)` is now equivalent to
+  :func:`bn.partition(a, kth=n-1)`. Similarly for bn.argpartition.
 - The keyword for array input has been changed from `arr` to `a` in all
   functions. It now matches NumPy.
 
@@ -91,6 +173,10 @@ This release is a complete rewrite of Bottleneck.
 - A special thanks to the Cython developers. The quickest way to appreciate
   their work is to remove Cython from your project. It is not easy.
 
+**Contributors**
+
+.. contributors:: v1.1.0..v1.2.0
+
 Bottleneck 1.1.0
 ----------------
 
@@ -100,8 +186,8 @@ This release makes Bottleneck more robust, releases GIL, adds new functions.
 
 **More Robust**
 
-- move_median can now handle NaNs and `min_count` parameter
-- move_std is slower but numerically more stable
+- :func:`bn.move_median` can now handle NaNs and `min_count` parameter
+- :func:`bn.move_std` is slower but numerically more stable
 - Bottleneck no longer crashes on byte-swapped input arrays
 
 **Faster**
@@ -128,11 +214,11 @@ This release makes Bottleneck more robust, releases GIL, adds new functions.
 
 **Beware**
 
-- median now returns NaN for a slice that contains one or more NaNs
+- :func:`bn.median` now returns NaN for a slice that contains one or more NaNs
 - Instead of using the distutils default, the '-O2' C compiler flag is forced
-- move_std output changed when mean is large compared to standard deviation
+- :func:`bn.move_std` output changed when mean is large compared to standard deviation
 - Fixed: Non-accelerated moving window functions used min_count incorrectly
-- move_median is a bit slower for float input arrays that do not contain NaN
+- :func:`bn.move_median` is a bit slower for float input arrays that do not contain NaN
 
 **Thanks**
 
@@ -144,6 +230,10 @@ Alphabeticaly by last name
 - Jaime Frio improved the numerical stability of move_std
 - Christoph Gohlke revived Windows compatibility
 - Jennifer Olsen added NaN support to move_median
+
+**Contributors**
+
+.. contributors:: v1.0.0..v1.1.0
 
 Bottleneck 1.0.0
 ----------------
@@ -193,6 +283,10 @@ This release is a complete rewrite of Bottleneck.
 - Can now install bottleneck with pip even if numpy is not already installed
 - bn.move_max, bn.move_min now return float32 for float32 input
 
+**Contributors**
+
+.. contributors:: v0.8.0..v1.0.0
+
 Bottleneck 0.8.0
 ----------------
 
@@ -209,6 +303,10 @@ This version of Bottleneck requires NumPy 1.8.
 
 - nanargmax/nanargmin wrong for redundant max/min values in 1d int arrays
 
+**Contributors**
+
+.. contributors:: v0.7.0..v0.8.0
+
 Bottleneck 0.7.0
 ----------------
 
@@ -224,11 +322,15 @@ Bottleneck 0.7.0
 
 **Bug fixes**
 
-- #50 move_std, move_nanstd return inappropriate NaNs (sqrt of negative #)
-- #52 `make test` fails on some computers
-- #57 scipy optional yet some unit tests depend on scipy
-- #49, #55 now works on Mac OS X 10.8 using clang compiler
-- #60 nanstd([1.0], ddof=1) and nanvar([1.0], ddof=1) crash
+- move_std, move_nanstd return inappropriate NaNs (sqrt of negative #) (:issue:`50`)
+- `make test` fails on some computers (:issue:`52`)
+- scipy optional yet some unit tests depend on scipy (:issue:`57`)
+- now works on Mac OS X 10.8 using clang compiler (:issue:`49`, :issue:`55`)
+- nanstd([1.0], ddof=1) and nanvar([1.0], ddof=1) crash (:issue:`60`)
+
+**Contributors**
+
+.. contributors:: v0.6.0..v0.7.0
 
 Bottleneck 0.6.0
 ----------------
@@ -257,9 +359,13 @@ Thanks to Dougal Sutherland, Bottleneck now runs on Python 3.2.
 
 **Bug fixes**
 
-- #31 Confusing error message in partsort and argpartsort
-- #32 Update path in MANIFEST.in
-- #35 Wrong output for very large (2**31) input arrays
+- Confusing error message in partsort and argpartsort (:issue:`31`)
+- Update path in MANIFEST.in (:issue:`32`)
+- Wrong output for very large (2**31) input arrays (:issue:`35`)
+
+**Contributors**
+
+.. contributors:: v0.5.0..v0.6.0
 
 Bottleneck 0.5.0
 ----------------
@@ -287,10 +393,10 @@ window median.
 
 **Bug fixes**
 
-- #14 Support python 2.5 by importing `with` statement
-- #22 nanmedian wrong for particular ordering of NaN and non-NaN elements
-- #26 argpartsort, nanargmin, nanargmax returned wrong dtype on 64-bit Windows
-- #29 rankdata and nanrankdata crashed on 64-bit Windows
+- Support python 2.5 by importing `with` statement (:issue:`14`)
+- nanmedian wrong for particular ordering of NaN and non-NaN elements (:issue:`22`)
+- argpartsort, nanargmin, nanargmax returned wrong dtype on 64-bit Windows (:issue:`26`)
+- rankdata and nanrankdata crashed on 64-bit Windows (:issue:`29`)
 
 Bottleneck 0.4.3
 ----------------
@@ -301,8 +407,8 @@ This is a bug fix release.
 
 **Bug fixes**
 
-- #11 median and nanmedian modified (partial sort) input array
-- #12 nanmedian wrong when odd number of elements with all but last a NaN
+- median and nanmedian modified (partial sort) input array (:issue:`11`)
+- nanmedian wrong when odd number of elements with all but last a NaN (:issue:`12`)
 
 **Enhancement**
 
@@ -359,9 +465,9 @@ operating systems.
 
 **Bug fixes**
 
-- #6 Some functions gave wrong output dtype for some input dtypes on 32 bit OS
-- #7 Some functions choked on size zero input arrays
-- #8 Segmentation fault with Cython 0.14.1 (but not 0.13)
+- Some functions gave wrong output dtype for some input dtypes on 32 bit OS (:issue:`6`)
+- Some functions choked on size zero input arrays (:issue:`7`)
+- Segmentation fault with Cython 0.14.1 (but not 0.13) (:issue:`8`)
 
 Bottleneck 0.3.0
 ----------------

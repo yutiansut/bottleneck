@@ -4,11 +4,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <bn_config.h>
 
 typedef size_t idx_t;
 typedef double ai_t;
 
-#if BINARY_TREE==1
+#if BINARY_TREE == 1
     #define NUM_CHILDREN 2
 #else
     /* maximum of 8 due to the manual loop-unrolling used in the code */
@@ -24,7 +25,7 @@ typedef double ai_t;
 #define LH 1
 #define NA 2
 
-#define FIRST_LEAF(n) ceil((n - 1) / (double)NUM_CHILDREN)
+#define FIRST_LEAF(n) (idx_t) ceil((n - 1) / (double)NUM_CHILDREN)
 
 struct _mm_node {
     int              region; /* SH small heap, LH large heap, NA nan array */
@@ -69,24 +70,11 @@ void mm_free(mm_handle *mm);
 
 /* Copied from Cython ---------------------------------------------------- */
 
-/* inline attribute */
-#ifndef MM_INLINE
-    #if defined(__GNUC__)
-      #define MM_INLINE __inline__
-    #elif defined(_MSC_VER)
-      #define MM_INLINE __inline
-    #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-      #define MM_INLINE inline
-    #else
-      #define MM_INLINE
-    #endif
-#endif
-
 /* NaN */
 #ifdef NAN
     #define MM_NAN() ((float) NAN)
 #else
-    static MM_INLINE float MM_NAN(void) {
+    static inline float MM_NAN(void) {
         float value;
         memset(&value, 0xFF, sizeof(value));
         return value;

@@ -1,9 +1,12 @@
-#ifndef BOTTLENECK_H
-#define BOTTLENECK_H
+// Copyright 2010-2019 Keith Goodman
+// Copyright 2019 Bottleneck Developers
+#ifndef BOTTLENECK_H_
+#define BOTTLENECK_H_
 
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_11_API_VERSION
 #include <numpy/arrayobject.h>
+#include <bn_config.h>
 
 /* THREADS=1 releases the GIL but increases function call
  * overhead. THREADS=0 does not release the GIL but keeps
@@ -43,32 +46,30 @@
 #define MEMORY_ERR(text)  PyErr_SetString(PyExc_MemoryError, text)
 #define RUNTIME_ERR(text) PyErr_SetString(PyExc_RuntimeError, text)
 
-/* `inline` copied from NumPy. */
-#if defined(_MSC_VER)
-        #define BN_INLINE __inline
-#elif defined(__GNUC__)
-	#if defined(__STRICT_ANSI__)
-		#define BN_INLINE __inline__
-	#else
-		#define BN_INLINE inline
-	#endif
+/* `inline` and `opt_3` copied from NumPy. */
+#if HAVE_ATTRIBUTE_OPTIMIZE_OPT_3
+    #define BN_OPT_3 __attribute__((optimize("O3")))
 #else
-        #define BN_INLINE
+    #define BN_OPT_3
 #endif
 
 /*
  * NAN and INFINITY like macros (same behavior as glibc for NAN, same as C99
  * for INFINITY). Copied from NumPy.
  */
-BN_INLINE static float __bn_inff(void)
-{
-    const union { npy_uint32 __i; float __f;} __bint = {0x7f800000UL};
+static inline float __bn_inff(void) {
+    const union {
+        npy_uint32 __i;
+        float __f;
+    } __bint = {0x7f800000UL};
     return __bint.__f;
 }
 
-BN_INLINE static float __bn_nanf(void)
-{
-    const union { npy_uint32 __i; float __f;} __bint = {0x7fc00000UL};
+static inline float __bn_nanf(void) {
+    const union {
+        npy_uint32 __i;
+        float __f;
+    } __bint = {0x7fc00000UL};
     return __bint.__f;
 }
 
@@ -76,10 +77,6 @@ BN_INLINE static float __bn_nanf(void)
 #define BN_NANF      __bn_nanf()
 #define BN_INFINITY ((npy_double)BN_INFINITYF)
 #define BN_NAN      ((npy_double)BN_NANF)
-
-#define C_CONTIGUOUS(a) PyArray_CHKFLAGS(a, NPY_ARRAY_C_CONTIGUOUS)
-#define F_CONTIGUOUS(a) PyArray_CHKFLAGS(a, NPY_ARRAY_F_CONTIGUOUS)
-#define IS_CONTIGUOUS(a) (C_CONTIGUOUS(a) || F_CONTIGUOUS(a))
 
 /* WIRTH ----------------------------------------------------------------- */
 
@@ -98,14 +95,14 @@ BN_INLINE static float __bn_nanf(void)
 */
 
 #define WIRTH(dtype) \
-    x = B(dtype, k); \
+    npy_##dtype x = B(dtype, k); \
     i = l; \
     j = r; \
     do { \
         while (B(dtype, i) < x) i++; \
         while (x < B(dtype, j)) j--; \
         if (i <= j) { \
-            npy_##dtype atmp = B(dtype, i); \
+            const npy_##dtype atmp = B(dtype, i); \
             B(dtype, i) = B(dtype, j); \
             B(dtype, j) = atmp; \
             i++; \
@@ -119,29 +116,25 @@ BN_INLINE static float __bn_nanf(void)
 
 #define PARTITION(dtype) \
     while (l < r) { \
-        npy_##dtype x; \
-        npy_##dtype al = B(dtype, l); \
-        npy_##dtype ak = B(dtype, k); \
-        npy_##dtype ar = B(dtype, r); \
+        const npy_##dtype al = B(dtype, l); \
+        const npy_##dtype ak = B(dtype, k); \
+        const npy_##dtype ar = B(dtype, r); \
         if (al > ak) { \
             if (ak < ar) { \
                 if (al < ar) { \
                     B(dtype, k) = al; \
                     B(dtype, l) = ak; \
-                } \
-                else { \
+                } else { \
                     B(dtype, k) = ar; \
                     B(dtype, r) = ak; \
                 } \
             } \
-        } \
-        else { \
+        } else { \
             if (ak > ar) { \
                 if (al > ar) { \
                     B(dtype, k) = al; \
                     B(dtype, l) = ak; \
-                } \
-                else { \
+                } else { \
                     B(dtype, k) = ar; \
                     B(dtype, r) = ak; \
                 } \
@@ -155,8 +148,7 @@ BN_INLINE static float __bn_nanf(void)
 static PyObject *slow_module = NULL;
 
 static PyObject *
-slow(char *name, PyObject *args, PyObject *kwds)
-{
+slow(char *name, PyObject *args, PyObject *kwds) {
     PyObject *func = NULL;
     PyObject *out = NULL;
 
@@ -183,8 +175,7 @@ slow(char *name, PyObject *args, PyObject *kwds)
             Py_XDECREF(func);
             return NULL;
         }
-    }
-    else {
+    } else {
         Py_XDECREF(func);
         PyErr_Format(PyExc_RuntimeError,
                      "bottleneck.slow.%s is not callable", name);
@@ -195,4 +186,4 @@ slow(char *name, PyObject *args, PyObject *kwds)
     return out;
 }
 
-#endif /* BOTTLENECK_H */
+#endif  // BOTTLENECK_H_

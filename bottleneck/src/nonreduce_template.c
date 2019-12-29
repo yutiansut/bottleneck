@@ -1,3 +1,5 @@
+// Copyright 2010-2019 Keith Goodman
+// Copyright 2019 Bottleneck Developers
 #include "bottleneck.h"
 #include "iterators.h"
 
@@ -19,26 +21,26 @@ nonreducer(char *name,
 /* replace --------------------------------------------------------------- */
 
 /* dtype = [['float64'], ['float32']] */
-static PyObject *
-replace_DTYPE0(PyArrayObject *a, double old, double new)
-{
-    npy_DTYPE0 ai;
+static BN_OPT_3 PyObject *
+replace_DTYPE0(PyArrayObject *a, double old, double new) {
     iter it;
     init_iter_all(&it, a, 0, 1);
     BN_BEGIN_ALLOW_THREADS
+    const npy_DTYPE0 oldf = (npy_DTYPE0)old;
+    const npy_DTYPE0 newf = (npy_DTYPE0)new;
     if (old == old) {
         WHILE {
+            npy_DTYPE0* array = PA(DTYPE0);
             FOR {
-                if (AI(DTYPE0) == old) AI(DTYPE0) = new;
+                array[it.i] = array[it.i] == oldf ? newf : array[it.i];
             }
             NEXT
         }
-    }
-    else {
+    } else {
         WHILE {
+            npy_DTYPE0* array = PA(DTYPE0);
             FOR {
-                ai = AI(DTYPE0);
-                if (ai != ai) AI(DTYPE0) = new;
+                array[it.i] = array[it.i] != array[it.i] ? newf : array[it.i];
             }
             NEXT
         }
@@ -51,15 +53,13 @@ replace_DTYPE0(PyArrayObject *a, double old, double new)
 
 
 /* dtype = [['int64'], ['int32']] */
-static PyObject *
-replace_DTYPE0(PyArrayObject *a, double old, double new)
-{
-    npy_DTYPE0 oldint, newint;
+static BN_OPT_3 PyObject *
+replace_DTYPE0(PyArrayObject *a, double old, double new) {
     iter it;
     init_iter_all(&it, a, 0, 1);
     if (old == old) {
-        oldint = (npy_DTYPE0)old;
-        newint = (npy_DTYPE0)new;
+        const npy_DTYPE0 oldint = (npy_DTYPE0)old;
+        const npy_DTYPE0 newint = (npy_DTYPE0)new;
         if (oldint != old) {
             VALUE_ERR("Cannot safely cast `old` to int");
             return NULL;
@@ -70,8 +70,11 @@ replace_DTYPE0(PyArrayObject *a, double old, double new)
         }
         BN_BEGIN_ALLOW_THREADS
         WHILE {
-            FOR {
-                if (AI(DTYPE0) == oldint) AI(DTYPE0) = newint;
+            npy_DTYPE0* array = (npy_DTYPE0 *)it.pa;
+            npy_intp i;
+            // clang has a large perf regression when using the FOR macro here
+            for (i=0; i < it.length; i++) {
+                array[i] = array[i] == oldint ? newint : array[i];
             }
             NEXT
         }
@@ -83,8 +86,7 @@ replace_DTYPE0(PyArrayObject *a, double old, double new)
 /* dtype end */
 
 static PyObject *
-replace(PyObject *self, PyObject *args, PyObject *kwds)
-{
+replace(PyObject *self, PyObject *args, PyObject *kwds) {
     return nonreducer("replace",
                       args,
                       kwds,
@@ -112,13 +114,12 @@ intern_strings(void) {
 
 /* nonreduce ------------------------------------------------------------- */
 
-static BN_INLINE int
+static inline int
 parse_args(PyObject *args,
            PyObject *kwds,
            PyObject **a,
            PyObject **old,
-           PyObject **new)
-{
+           PyObject **new) {
     const Py_ssize_t nargs = PyTuple_GET_SIZE(args);
     const Py_ssize_t nkwds = kwds == NULL ? 0 : PyDict_Size(kwds);
     if (nkwds) {
@@ -166,8 +167,7 @@ parse_args(PyObject *args,
             TYPE_ERR("too many arguments");
             return 0;
         }
-    }
-    else {
+    } else {
         switch (nargs) {
             case 3:
                 *a = PyTuple_GET_ITEM(args, 0);
@@ -179,9 +179,7 @@ parse_args(PyObject *args,
                 return 0;
         }
     }
-
     return 1;
-
 }
 
 static PyObject *
@@ -192,8 +190,7 @@ nonreducer(char *name,
            nr_t nr_float32,
            nr_t nr_int64,
            nr_t nr_int32,
-           int inplace)
-{
+           int inplace) {
     int dtype;
     double old, new;
 
@@ -207,7 +204,7 @@ nonreducer(char *name,
     if (!parse_args(args, kwds, &a_obj, &old_obj, &new_obj)) return NULL;
 
     /* convert to array if necessary */
-    if PyArray_Check(a_obj) {
+    if (PyArray_Check(a_obj)) {
         a = (PyArrayObject *)a_obj;
         Py_INCREF(a);
     } else {
@@ -223,7 +220,7 @@ nonreducer(char *name,
     }
 
     /* check for byte swapped input array */
-    if PyArray_ISBYTESWAPPED(a) {
+    if (PyArray_ISBYTESWAPPED(a)) {
         return slow(name, args, kwds);
     }
 
@@ -231,8 +228,7 @@ nonreducer(char *name,
     if (old_obj == NULL) {
         RUNTIME_ERR("`old_obj` should never be NULL; please report this bug.");
         goto error;
-    }
-    else {
+    } else {
         old = PyFloat_AsDouble(old_obj);
         if (error_converting(old)) {
             TYPE_ERR("`old` must be a number");
@@ -244,8 +240,7 @@ nonreducer(char *name,
     if (new_obj == NULL) {
         RUNTIME_ERR("`new_obj` should never be NULL; please report this bug.");
         goto error;
-    }
-    else {
+    } else {
         new = PyFloat_AsDouble(new_obj);
         if (error_converting(new)) {
             TYPE_ERR("`new` must be a number");
@@ -264,11 +259,9 @@ nonreducer(char *name,
     Py_DECREF(a);
 
     return y;
-
 error:
     Py_DECREF(a);
     return NULL;
-
 }
 
 /* docstrings ------------------------------------------------------------- */
@@ -335,11 +328,11 @@ nonreduce_methods[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef
 nonreduce_def = {
-   PyModuleDef_HEAD_INIT,
-   "nonreduce",
-   nonreduce_doc,
-   -1,
-   nonreduce_methods
+    PyModuleDef_HEAD_INIT,
+    "nonreduce",
+    nonreduce_doc,
+    -1,
+    nonreduce_methods
 };
 #endif
 
